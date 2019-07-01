@@ -1,0 +1,5 @@
+//gcc -I../src/include/ -shared -Wl,-soname,ndpiReader -o ndpiReader.so -fPIC ndpiReader.c ndpi_util.c ../src/lib/libndpi.a -lpcap -lpthread
+
+gcc -I../src/include/ -shared -Wl,-soname,ndpiReader -o ndpiReader.so -fPIC ndpiReader.c ndpi_util.c ndpi_wrap_get_macro.c ../src/lib/libndpi.a -lpcap -lpthread
+
+ricordarsi di togliere le stampe dal ndpireader
