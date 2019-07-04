@@ -1,18 +1,22 @@
 CC=clang
 CXX=gcc
 CFLAGS=-I. -I../src/include -shared -Wl,
-LIBNDPI=ndpi_wrap.c ndpi_util.c ../src/lib/libndpi.a
-LDFLAGS=$(LIBNDPI) -lpcap -lpthread
+LIBNDPI=../src/lib/libndpi.a
+LDFLAGS=$(CFILE) $(LIBNDPI) -lpcap -lpthread
 SHARE = -soname,ndpiReader
-OBJS=ndpiReader.so
+SO=ndpiReader.so
+OBJS = ndpi_wrap.o ndpi_util.o
+CFILE = ndpi_wrap.c ndpi_util.c
 PIC = -fPIC
 PREFIX?=/usr/local
 .PHONY: all
-ifeq ($(UNAME),Darwin)#do something for linux
+
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)#do something for linux
 	SHARE=-install_name,ndpiReader.so
 endif
 
-all: ndpiReader.so
+all: ndpiWrap.so
 
-ndpiReader.so:
-	$(CXX) $(CFLAGS)$(SHARE) -o $(OBJS) $(PIC) $(LDFLAGS)
+ndpiWrap.so: $(CFILE) $(LIBNDPI)
+	$(CXX) $(CFLAGS)$(SHARE) -o $@ $(PIC) $(LDFLAGS)
