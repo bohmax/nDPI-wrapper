@@ -1,7 +1,9 @@
 import sys
 from ctypes import *
 
-ndpi = CDLL('/home/massimo/Desktop/nDPI/example/ndpiReader.so')
+ndpi = CDLL('/Users/maxuel/Desktop/nDPI-so/example/ndpiReader.so')
+
+#example: try -i <interface>
 
 print('Number of arguments:', len(sys.argv), 'arguments.')
 print('Argument List:', str(sys.argv))
