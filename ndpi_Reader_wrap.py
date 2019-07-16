@@ -1,7 +1,7 @@
 import sys
 from ctypes import *
 
-ndpi = CDLL('/Users/maxuel/Desktop/nDPI-so/example/ndpiReader.so')
+ndpi = CDLL('ndpiWrap.so')
 
 #example: try -i <interface>
 

@@ -1,6 +1,6 @@
 from ctypes import *
 
-ndpi = CDLL('/Users/maxuel/Desktop/nDPI-so/example/ndpiWrap.so')
+ndpi = CDLL('ndpiWrap.so')
 
 # NDPI_SELECTION_BITMASK_PROTOCOL_SIZE = c_uint32
 # ndpi_protocol_category_t, ndpi_protocol_breed_t e ndpi_log_level_t è un enumeratore e lo cambio con c_int
