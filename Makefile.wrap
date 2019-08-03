@@ -5,8 +5,8 @@ LIBNDPI=../src/lib/libndpi.a
 LDFLAGS=$(CFILE) $(LIBNDPI) -lpcap -lpthread
 SHARE = -soname,ndpiReader
 SO=ndpiReader.so
-OBJS = ndpi_wrap.o ndpi_util.o
-CFILE = ndpi_wrap.c ndpi_util.c
+OBJS = ndpi_wrap.o reader_util.o
+CFILE = ndpi_wrap.c reader_util.c
 PIC = -fPIC
 PREFIX?=/usr/local
 .PHONY: all

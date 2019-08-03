@@ -8,7 +8,7 @@ These instructions will allow you to set up and run a copy of the project on you
 
 ### Prerequisites
 
-This software has been tested under python 3.5, but every python version higher or equal 2.7 would also be suitable (as long as you change print() and use it without the brackets)
+This software has been tested under python 3.5, but every python version higher or equal 3 would also be suitable
 
 ### Installing
 
