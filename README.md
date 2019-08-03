@@ -21,13 +21,13 @@ make -f Makefile.wrap
 To test it, just use
 
 ```
-python ndpi_Reader_wrap.py -i <interface>
+python3 ndpi_Reader_wrap.py -i <interface>
 ```
 
 Alternatively, run it like this and see what it can offer you
 
 ```
-python ndpi_Reader_wrap.py
+python3 ndpi_Reader_wrap.py
 ```
 
 ### More information
