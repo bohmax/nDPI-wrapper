@@ -1,6 +1,6 @@
 from ctypes import *
 
-ndpi = CDLL('ndpiWrap.so')
+ndpi = CDLL('/Users/maxuel/Desktop/nDPI/example/ndpiWrap.so')
 
 # NDPI_SELECTION_BITMASK_PROTOCOL_SIZE = c_uint32
 # ndpi_protocol_category_t, ndpi_protocol_breed_t e ndpi_log_level_t è un enumeratore e lo cambio con c_int
@@ -38,6 +38,13 @@ class ndpi_automa(Structure):
       ("ac_automa_finalized", c_uint8)
     ]
 
+class struct_node_t(Structure):
+    pass
+struct_node_t._fields_ = [
+    ('key', POINTER(c_char)),
+    ('left', POINTER(struct_node_t)),
+    ('right', POINTER(struct_node_t)),
+]
 
 class ndpi_call_function_struct(Structure):
     _fields_ = [
@@ -166,7 +173,7 @@ class custom_categories(Structure):
 
 
 ndpi_detection_module_struct._fields_ = [
-        ("detection_bitmask", NDPI_PROTOCOL_BITMASK ),
+        ("detection_bitmask", NDPI_PROTOCOL_BITMASK),
         ("generic_http_packet_bitmask", NDPI_PROTOCOL_BITMASK),
 
         ("current_ts", c_uint32),
@@ -521,8 +528,8 @@ class struct_ndpi_int_one_line_struct(Structure):
 
 class struct_ndpi_iphdr(Structure):
     _fields_ = [
-    ('ihl', c_uint8, 4),
     ('version', c_uint8, 4),
+    ('ihl', c_uint8, 4),
     ('tos', c_uint8),
     ('tot_len', c_uint16),
     ('id', c_uint16),
@@ -531,8 +538,20 @@ class struct_ndpi_iphdr(Structure):
     ('protocol', c_uint8),
     ('check', c_uint16),
     ('saddr', c_uint32),
-    ('daddr', c_uint32),
-]
+    ('daddr', c_uint32)]
+
+    def fill(self, version, ihl, tos, tot_len, id, frag_off, ttl, protocol, check, saddr, daddr):
+        self.ihl = ihl
+        self.version = version
+        self.tos = tos
+        self.tot_len = tot_len
+        self.id = id
+        self.frag_off = frag_off
+        self.ttl = ttl
+        self.protocol = protocol
+        self.check = check
+        self.saddr = saddr
+        self.daddr = daddr
 
 class struct_ndpi_ip6_hdrctl(Structure):
     _fields_ = [

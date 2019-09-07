@@ -32,6 +32,10 @@ int ndpi_wrap_idle_scan_budget(){
 	return IDLE_SCAN_BUDGET;
 }
 
+void ndpi_wrap_NDPI_BITMASK_SET_ALL(NDPI_PROTOCOL_BITMASK* bitmask){
+	NDPI_ONE(bitmask);
+}
+
 struct reader_thread* execute(int argc, char** argv, struct ndpi_detection_module_struct * replace, struct timeval time){
 	int i = 0;
 	startup_time = time;

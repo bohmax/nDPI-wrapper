@@ -45,7 +45,7 @@ if ndpi.ndpi_get_api_version() != ndpi.ndpi_wrap_get_api_version():
 startup_time = timeval(0, 0)
 ndpi.gettimeofday(byref(startup_time), None)
 
-#create a data structure of ndpi
+#create data structure of ndpi
 ndpi_info_mod = ndpi_detection_module_struct.from_address(ndpi.ndpi_init_detection_module())
 if ndpi_info_mod == None:
     sys.exit(-1)
