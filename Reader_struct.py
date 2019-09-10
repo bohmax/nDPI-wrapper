@@ -1,7 +1,11 @@
+import sys, os
+sys.path.insert(0, (os.getcwd() + '/../src/lib')
 from ndpi_typestruct import *
+
 
 class ndpi_workflow(Structure):
     pass
+
 
 class ndpi_stats(Structure):
     _fields_ = [

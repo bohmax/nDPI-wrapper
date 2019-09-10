@@ -1,9 +1,9 @@
 from ctypes import *
 
-ndpi = CDLL('/Users/maxuel/Desktop/nDPI/example/ndpiWrap.so')
+ndpi = CDLL('ndpiWrap.so')
 
 # NDPI_SELECTION_BITMASK_PROTOCOL_SIZE = c_uint32
-# ndpi_protocol_category_t, ndpi_protocol_breed_t e ndpi_log_level_t è un enumeratore e lo cambio con c_int
+# ndpi_protocol_category_t, ndpi_protocol_breed_t e ndpi_log_level_t sono enumeratori e vengono impostati come c_int
 
 class ndpi_detection_module_struct(Structure):
     pass
@@ -20,7 +20,10 @@ class ndpi_protocol(Structure):
     ]
 
 class timeval(Structure):
-    _fields_ = [("tv_sec", c_long), ("tv_usec", c_long)]
+    _fields_ = [("tv_sec", c_ulong), ("tv_usec", c_ulong)]
+
+class pcap_pkthdr(Structure):
+    _fields_ = [("ts", timeval), ("caplen", c_uint32), ("len", c_uint32)]
 
 #dal file ../src/include/ndpi_tydedefs.h
 class ndpi_ndpi_mask(Structure):
@@ -51,13 +54,13 @@ class ndpi_call_function_struct(Structure):
         ("detection_bitmask", NDPI_PROTOCOL_BITMASK),
         ("excluded_protocol_bitmask",NDPI_PROTOCOL_BITMASK),
         ("ndpi_selection_bitmask", c_uint32),
-        ("func", CFUNCTYPE(c_void_p,POINTER(ndpi_detection_module_struct),POINTER(ndpi_flow_struct))),
+        ("func", CFUNCTYPE(None, POINTER(ndpi_detection_module_struct), POINTER(ndpi_flow_struct))),
         ("detection_feature", c_uint8)
     ]
 
 class ndpi_proto_defaults_t(Structure):
     _fields_ = [
-        ("protoName", c_char_p),
+        ("protoName", POINTER(c_char)),
         ("protoCategory",c_uint),
         ("can_have_a_subprotocol", c_uint8),
         ("protoId", c_uint16),
@@ -65,7 +68,7 @@ class ndpi_proto_defaults_t(Structure):
         ("master_tcp_protoId", c_uint16 * 2),
         ("master_udp_protoId", c_uint16 * 2),
         ("protoBreed", c_uint),
-        ("func", CFUNCTYPE(c_void_p,POINTER(ndpi_detection_module_struct),POINTER(ndpi_flow_struct))),
+        ("func", CFUNCTYPE(None, POINTER(ndpi_detection_module_struct), POINTER(ndpi_flow_struct))),
     ]
 
 class ndpi_default_ports_tree_node_t(Structure):
@@ -192,7 +195,7 @@ ndpi_detection_module_struct._fields_ = [
         ("callback_buffer_size_tcp_no_payload", c_uint32),
 
         ("callback_buffer_tcp_payload", ndpi_call_function_struct * (ndpi.ndpi_wrap_ndpi_max_supported_protocols() + 1)),
-        ("callback_buffer_size_tcp_payload", c_uint32 ),
+        ("callback_buffer_size_tcp_payload", c_uint32),
 
         ("callback_buffer_udp", ndpi_call_function_struct * (ndpi.ndpi_wrap_ndpi_max_supported_protocols() + 1)),
         ("callback_buffer_size_udp", c_uint32),
@@ -526,10 +529,10 @@ class struct_ndpi_int_one_line_struct(Structure):
     ('len', c_uint16),
 ]
 
-class struct_ndpi_iphdr(Structure):
+class struct_ndpi_iphdr_little_end(Structure):
     _fields_ = [
-    ('version', c_uint8, 4),
     ('ihl', c_uint8, 4),
+    ('version', c_uint8, 4),
     ('tos', c_uint8),
     ('tot_len', c_uint16),
     ('id', c_uint16),
@@ -539,19 +542,6 @@ class struct_ndpi_iphdr(Structure):
     ('check', c_uint16),
     ('saddr', c_uint32),
     ('daddr', c_uint32)]
-
-    def fill(self, version, ihl, tos, tot_len, id, frag_off, ttl, protocol, check, saddr, daddr):
-        self.ihl = ihl
-        self.version = version
-        self.tos = tos
-        self.tot_len = tot_len
-        self.id = id
-        self.frag_off = frag_off
-        self.ttl = ttl
-        self.protocol = protocol
-        self.check = check
-        self.saddr = saddr
-        self.daddr = daddr
 
 class struct_ndpi_ip6_hdrctl(Structure):
     _fields_ = [
@@ -599,7 +589,7 @@ class struct_ndpi_udphdr(Structure):
 
 class ndpi_packet_struct(Structure):
     _fields_ = [
-    ('iph', POINTER(struct_ndpi_iphdr)),
+    ('iph', POINTER(struct_ndpi_iphdr_little_end)),
     ('iphv6', POINTER(struct_ndpi_ipv6hdr)),
     ('tcp', POINTER(struct_ndpi_tcphdr)),
     ('udp', POINTER(struct_ndpi_udphdr)),
@@ -743,3 +733,22 @@ ndpi_flow_struct._fields_ = [
     ('src', POINTER(ndpi_id_struct)),
     ('dst', POINTER(ndpi_id_struct))
 ]
+
+
+ndpi.ndpi_revision.restype = c_void_p
+ndpi.ndpi_tfind.restype = c_void_p
+ndpi.ndpi_tsearch.restype = c_void_p
+ndpi.ndpi_get_proto_name.restype = c_void_p
+ndpi.ndpi_get_num_supported_protocols.restype = c_uint
+ndpi.ndpi_detection_process_packet.restype = ndpi_protocol
+ndpi.ndpi_guess_undetected_protocol.restype = ndpi_protocol
+ndpi.ndpi_init_detection_module.restype = POINTER(ndpi_detection_module_struct)
+ndpi.ndpi_wrap_NDPI_BITMASK_SET_ALL.argtypes = [POINTER(NDPI_PROTOCOL_BITMASK)]
+ndpi.ndpi_set_protocol_detection_bitmask2.argtypes = [POINTER(ndpi_detection_module_struct), POINTER(NDPI_PROTOCOL_BITMASK)]
+ndpi.ndpi_tsearch.argtypes = [c_void_p, POINTER(c_void_p), CFUNCTYPE(c_int, c_void_p, c_void_p)]
+ndpi.ndpi_twalk.argtypes = [c_void_p, CFUNCTYPE(None, c_void_p, c_int32, c_int, c_void_p), c_void_p]
+ndpi.ndpi_tdestroy.argtypes = [c_void_p, CFUNCTYPE(None, c_void_p)]
+ndpi.ndpi_detection_giveup.restype = ndpi_protocol
+ndpi.ndpi_detection_giveup.argtypes = [POINTER(ndpi_detection_module_struct), POINTER(ndpi_flow_struct), c_uint8]
+ndpi.ndpi_guess_undetected_protocol.argtypes = [POINTER(ndpi_detection_module_struct), POINTER(ndpi_flow_struct), c_uint8, c_uint32, c_uint32, c_uint32, c_uint32]
+ndpi.ndpi_detection_process_packet.argtypes = [POINTER(ndpi_detection_module_struct), POINTER(ndpi_flow_struct), POINTER(c_ubyte), c_ushort, c_uint64, POINTER(ndpi_id_struct), POINTER(ndpi_id_struct)]

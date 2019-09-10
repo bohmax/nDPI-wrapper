@@ -1,17 +1,8 @@
-import argparse
-import sys
-import datetime
-import socket
-import struct
 from ndpi_typestruct import *
 from scapy.all import *
 
 
 # ------- return type & pcapstruct to declare -------
-
-
-class pcap_pkthdr(Structure):
-    _fields_ = [("ts", timeval), ("caplen", c_uint32), ("len", c_uint32)]
 
 
 class workflow(Structure):
@@ -31,7 +22,7 @@ class workflow(Structure):
 
 CMCFUN = CFUNCTYPE(c_int, c_void_p, c_void_p)
 GUESS = CFUNCTYPE(None, c_void_p, c_int32, c_int, c_void_p)
-FREE = CFUNCTYPE(None,c_void_p)
+FREE = CFUNCTYPE(None, c_void_p)
 
 
 def node_proto_guess_walker(nodo, which, depth, user_data):
@@ -40,11 +31,8 @@ def node_proto_guess_walker(nodo, which, depth, user_data):
     flow = cast(nodo, POINTER(POINTER(workflow))).contents.contents
     if which == 0 or which == 3:
         if flow.detection_completed == 0:  # order for tree operation
-            print('ip src ' + str(socket.ntohl(flow.src_ip)) + ' porta ' + str(flow.src_port) + ' ip dst ' + str(flow.dst_ip) + ' porta ' + str(
-                flow.dst_port) + ' proto ' + str(flow.protocol))
             flow.detected_protocol = ndpi.ndpi_detection_giveup(ndpi_info_mod, flow.flow, flow.protocol,
                                                                 int(socket.ntohl(flow.src_ip)), 1)
-        print('protocol ' + str(flow.detected_protocol.app_protocol) + ' numero pacchetti ' + str(flow.packets) + ' il suo src è ' + str(flow.dst_ip))
         count_protocol[flow.detected_protocol.app_protocol] += flow.packets
 
 
@@ -68,29 +56,14 @@ def py_cmp_fun(a, b):
 def freer(a):
     pass
 
-ndpi.ndpi_revision.restype = c_void_p
-ndpi.ndpi_tfind.restype = c_void_p
-ndpi.ndpi_tsearch.restype = c_void_p
-ndpi.ndpi_get_proto_name.restype = c_void_p
-ndpi.ndpi_get_num_supported_protocols.restype = c_uint
-ndpi.ndpi_detection_process_packet.restype = ndpi_protocol
-ndpi.ndpi_guess_undetected_protocol.restype = ndpi_protocol
-ndpi.ndpi_init_detection_module.restype = POINTER(ndpi_detection_module_struct)
-ndpi.ndpi_wrap_NDPI_BITMASK_SET_ALL.argtypes = [POINTER(NDPI_PROTOCOL_BITMASK)]
-ndpi.ndpi_set_protocol_detection_bitmask2.argtypes = [POINTER(ndpi_detection_module_struct), POINTER(NDPI_PROTOCOL_BITMASK)]
-ndpi.ndpi_tsearch.argtypes = [c_void_p, POINTER(c_void_p), CMCFUN]
-ndpi.ndpi_twalk.argtypes = [c_void_p, GUESS, c_void_p]
-ndpi.ndpi_detection_giveup.restype = ndpi_protocol
-ndpi.ndpi_detection_giveup.argtypes = [POINTER(ndpi_detection_module_struct), POINTER(ndpi_flow_struct), c_uint8]
-ndpi.ndpi_guess_undetected_protocol.argtypes = [POINTER(ndpi_detection_module_struct), POINTER(ndpi_flow_struct), c_uint8, c_uint32, c_uint32, c_uint32, c_uint32]
-ndpi.ndpi_detection_process_packet.argtypes = [POINTER(ndpi_detection_module_struct), POINTER(ndpi_flow_struct), POINTER(c_ubyte), c_ushort, c_uint64, POINTER(ndpi_id_struct), POINTER(ndpi_id_struct)]
+
 cmp_func = CMCFUN(py_cmp_fun)
 guess_walker = GUESS(node_proto_guess_walker)
 free_walk = FREE(freer)
 
 # --------------------------------------
 
-#number of anylized packet
+# number of anylized packet
 packet_number = 0
 flow_count = 0
 max_num_udp_dissected_pkts = 16
@@ -98,16 +71,15 @@ max_num_tcp_dissected_pkts = 10
 flows_root = c_void_p(None)
 flows_root_ref = pointer(flows_root)
 count_protocol = (c_int32 * (ndpi.ndpi_wrap_ndpi_max_supported_protocols() + ndpi.ndpi_wrap_ndpi_max_num_custom_protocols() + 1))()
-lista = []  # used to avoid impropriate memory allocation from python
+lista = []  # used to avoid impropriate memory deallocation from python
 
 
-#check ndpi version
+# check ndpi version
 if ndpi.ndpi_get_api_version() != ndpi.ndpi_wrap_get_api_version():
     print("nDPI Library version mismatch: please make sure this code and the nDPI library are in sync\n")
     sys.exit(-1)
 
 # create data structure of ndpi
-all = NDPI_PROTOCOL_BITMASK()
 ndpi_info_mod = ndpi.ndpi_init_detection_module()
 if ndpi_info_mod is None:
     sys.exit(-1)
@@ -149,8 +121,6 @@ def get_flow(packet):
     res = ndpi.ndpi_tfind(flow_ref, flows_root_ref, cmp_func)
     if res is None:
         ndpi.ndpi_tsearch(flow_ref, pointer(flows_root), cmp_func)  # add
-        print('ip src ' + str(flow.src_ip) + ' porta ' + str(flow.src_port) + ' ip dst ' +
-              str(flow.dst_ip) + ' porta ' + str(flow.dst_port))
         lista.append(flow)
         flow_count += 1
         return pointer(flow)
@@ -170,8 +140,7 @@ def packetcaptured(packet):
     try:
         flow = get_flow(packet)
     except AttributeError:
-        #ignore packet
-        pass
+        pass # ignore packet
     if flow is None: return
 
     #filling pcap_pkthdr
@@ -207,8 +176,7 @@ def packetcaptured(packet):
 def result():
     global flows_root_ref
     global ndpi_info_mod
-    print('\n\n\n\n\n')
-    print('number of anylized packet ' + str(packet_number))
+    print('\nnumber of anylized packet ' + str(packet_number))
     print('number of flows ' + str(flow_count))
 
     ndpi.ndpi_twalk(flows_root_ref.contents, guess_walker, None)
@@ -224,21 +192,34 @@ def free(ndpi_struct):
     ndpi.ndpi_exit_detection_module(ndpi_struct)
 
 
-#inizialize(ndpi_info_mod, all)
-ndpi.ndpi_wrap_NDPI_BITMASK_SET_ALL(pointer(all))
-ndpi.ndpi_set_protocol_detection_bitmask2(ndpi_info_mod, pointer(all))
+def inizialize(ndpi_struct):
+    all = NDPI_PROTOCOL_BITMASK()
+    ndpi.ndpi_wrap_NDPI_BITMASK_SET_ALL(pointer(all))
+    ndpi.ndpi_set_protocol_detection_bitmask2(ndpi_struct, pointer(all))
+
 
 print('Using nDPI ' + str(cast(ndpi.ndpi_revision(), c_char_p).value))
-print('Capturing live traffic from device ' + sys.argv[1] + '...')
 
-scapy_cap = rdpcap(sys.argv[1])
-for packet in scapy_cap:
-    packetcaptured(packet)
-'''
-try:
-    sniff(iface=sys.argv[1], prn=packetcaptured)
-except KeyboardInterrupt:
-    print('\nInterrupted\n')
-'''
+inizialize(ndpi_info_mod)
+
+if "." in sys.argv[1]:
+    print('Reading pcap from file ' + sys.argv[1] + '...')
+    scapy_cap = None
+    try:
+        scapy_cap = rdpcap(sys.argv[1])
+    except FileNotFoundError:
+        print("\nFile not found")
+    except Scapy_Exception:
+        print("\nBad pcap")
+    else:
+        for packet in scapy_cap:
+            packetcaptured(packet)
+else:
+    print('Capturing live traffic from device ' + sys.argv[1] + '...')
+    try:
+        sniff(iface=sys.argv[1], prn=packetcaptured)
+    except KeyboardInterrupt:
+        print('\nInterrupted\n')
+
 result()
 free(ndpi_info_mod)

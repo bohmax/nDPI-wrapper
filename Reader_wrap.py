@@ -1,16 +1,16 @@
 import sys
 from ctypes import *
 
-ndpi = CDLL('ndpiWrap.so')
+ndpi = CDLL('/Users/maxuel/Desktop/nDPI-so/example/ndpiWrap.so')
 
-#example: try -i <interface>
+# example: try -i <interface>
 
 print('Number of arguments:', len(sys.argv), 'arguments.')
 print('Argument List:', str(sys.argv))
 
 length = len(sys.argv)
 
-#crea un array di ctypes
+# crea un array di ctypes
 arr = (c_char_p * length)()
 arr[0] = './ndpiReader'.encode('utf-8')
 for i in range(1, length):
