@@ -1,3 +1,22 @@
+#
+# ndpi_example.h
+#
+# Copyright (C) 2011-18 - ntop.org
+#
+# nDPI is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# nDPI is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with nDPI.  If not, see <http://www.gnu.org/licenses/>.
+#
+
 from ndpi_typestruct import *
 from scapy.all import *
 
@@ -192,15 +211,15 @@ def free(ndpi_struct):
     ndpi.ndpi_exit_detection_module(ndpi_struct)
 
 
-def inizialize(ndpi_struct):
+def initialize(ndpi_struct):
     all = NDPI_PROTOCOL_BITMASK()
     ndpi.ndpi_wrap_NDPI_BITMASK_SET_ALL(pointer(all))
     ndpi.ndpi_set_protocol_detection_bitmask2(ndpi_struct, pointer(all))
 
 
-print('Using nDPI ' + str(cast(ndpi.ndpi_revision(), c_char_p).value))
+print('\nUsing nDPI ' + str(cast(ndpi.ndpi_revision(), c_char_p).value))
 
-inizialize(ndpi_info_mod)
+initialize(ndpi_info_mod)
 
 if "." in sys.argv[1]:
     print('Reading pcap from file ' + sys.argv[1] + '...')

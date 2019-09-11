@@ -1,6 +1,26 @@
+#
+# ndpi_typestruct.h
+#
+# Copyright (C) 2011-18 - ntop.org
+#
+# nDPI is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# nDPI is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with nDPI.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+
 from ctypes import *
 
-ndpi = CDLL('ndpiWrap.so')
+ndpi = CDLL('ndpi_wrap.so')
 
 # NDPI_SELECTION_BITMASK_PROTOCOL_SIZE = c_uint32
 # ndpi_protocol_category_t, ndpi_protocol_breed_t e ndpi_log_level_t sono enumeratori e vengono impostati come c_int
@@ -735,9 +755,9 @@ ndpi_flow_struct._fields_ = [
 ]
 
 
-ndpi.ndpi_revision.restype = c_void_p
 ndpi.ndpi_tfind.restype = c_void_p
 ndpi.ndpi_tsearch.restype = c_void_p
+ndpi.ndpi_revision.restype = c_void_p
 ndpi.ndpi_get_proto_name.restype = c_void_p
 ndpi.ndpi_get_num_supported_protocols.restype = c_uint
 ndpi.ndpi_detection_process_packet.restype = ndpi_protocol
