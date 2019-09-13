@@ -48,7 +48,7 @@ def node_proto_guess_walker(nodo, which, depth, user_data):
     global ndpi_info_mod
 
     flow = cast(nodo, POINTER(POINTER(workflow))).contents.contents
-    if which == 0 or which == 3:
+    if which == 0 or which == 3: #execute only preorder operation of the tree
         if flow.detection_completed == 0:  # order for tree operation
             flow.detected_protocol = ndpi.ndpi_detection_giveup(ndpi_info_mod, flow.flow, flow.protocol,
                                                                 int(socket.ntohl(flow.src_ip)), 1)
@@ -182,11 +182,14 @@ def packetcaptured(packet):
             flow1 = flow.contents.detected_protocol
 
             valid = False
+
             if flow.contents.protocol == 6: valid = flow.contents.packets > max_num_tcp_dissected_pkts
             elif flow.contents.protocol == 17: valid = flow.contents.packets > max_num_udp_dissected_pkts
+
+            #should we continue anylizing packet or not?
             if valid or flow1.app_protocol is not 0:
                 if valid or flow1.master_protocol is not 91: #or # 91 is NDPI_PROTOCOL_TLS
-                    flow.contents.detection_completed = 1
+                    flow.contents.detection_completed = 1 #protocol found
                     if flow1.app_protocol is 0:
                         flow.contents.detected_protocol = ndpi.ndpi_detection_giveup(ndpi_info_mod, ndpi_flow, 1)
 
